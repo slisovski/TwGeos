@@ -236,6 +236,40 @@ readMTsst <- function(file,d.lux=NULL,skip=20) {
   d
 }
 
+## Data export
+
+##' To pre- process geolocator datasets with TAGS it may be necessary 
+##' to compress the data (i.e. remove repeated light levels).
+##'
+##' @title Export data to match TAGS requirements
+##' @rdname export2TAGS
+##' @param tagdata a dataframe with columns \code{Date} and
+##' \code{Light} that are the sequence of sample times (as POSIXct)
+##' and light levels recorded by the tag.
+##' @param path if full path is specified, the output will be writen as a txt file ready to import into TAGS
+##' @param file name of txt file (without suffix)
+##' @param min ...
+##' @param max ...
+##' @return Return a data frame that matches rquirements for TAGS.
+##' @export
+export2TAGS <- function(tagdata, path = NULL, file = "exportTAGS", min = 0, max = 9999999999) {
+  light <- tagdata$Light
+  datetime <- tagdata$Date
+  light[light > max] <- max  #trim high values to designated maximum
+  light[light < min] <- min  #raise low values to designated minimum
+  l1 <- light[2:(length(light)-1)] #all but first and last light levels
+  l2 <- light[3:length(light)]     #light levels subsequent to each in l1
+  l3 <- light[1:(length(light)-2)] #light levels previous to each in l1
+  keep <- c(TRUE, l1!=l2 | l1!=l3, TRUE) #True/False vector corresponding with lt. True means there is a change in light levels (keep these rows)
+  out <- data.frame(datetime = datetime[keep], light = light[keep]) #new dataframe with just the changing light levels
+
+  if(!is.null(path)) {
+    write.table(out, file = paste0(path, "/", file, ".txt"), sep = ",", quote = FALSE, row.names = FALSE, col.names = c("datetime", "light"))
+  }
+  out
+}
+
+
 
 
 ##' Utilities for manipulating hours
@@ -742,6 +776,94 @@ twilightAdjust <- function(twilights,interval,fixed=FALSE) {
   adj <- !twilights$Rise & !fixed
   twilights$Twilight[adj] <- twilights$Twilight[adj]-interval
   twilights
+}
+
+
+##' Automated (Objective) editing and deletion of twilight times (experimental)
+##'
+##' This function searches for outliers and either deletes or adjusts them based on three defined thresholds.
+##' 
+##' \tabular{ll}{
+##' 'window' \tab ... \cr
+##' 'outlier.mins' \tab ... \cr
+##' 'stationary.mins' \tab ... \cr
+##' }
+##' @title Search and edit twilight outliers
+##' @param twilights a dataframe with columns \code{Twilight} and \code{Rise}
+##' @param offset the starting hour for the vertical axes.
+##' @param window the number of neighboring twilights
+##' @param outlier.mins threshold for outliers (in minutes)
+##' @param stationary.mins threshold for variation of twiligths at stationary site (in mins)
+##' @return the dataframe of edited twilights, with columns
+##' \item{\code{Twilight}}{times of (edited) twilight}
+##' \item{\code{Rise}}{logical indicating sunrise}
+##' \item{\code{Deleted}}{logical indentifying deleted twilights}
+##' \item{\code{Edited}}{logical indentifying edited twilights}
+##' \item{\code{Twilight0}}{Original twilight time}
+##' @importFrom zoo rollapply
+##' @importFrom graphics plot
+##' @export
+twilightEdit <- function(twilights, offset = 17, window = 4, outlier.mins = 45, stationary.mins = 15, zlim=c(0,64), plot = T){
+  
+  day <- twilights$Twilight
+  hour <- hourOffset(as.hour(twilights$Twilight),offset)
+  
+  sunr <- which(twilights$Rise)
+  suns <- which(!twilights$Rise)
+  
+  
+  fnc <- function(x) {
+    
+    ind0 <- abs(x[(window/2)+1,1] - x[-((window/2)+1),1]) > median(diff(as.numeric(day[suns])))*((window/2)+1)
+    if(any(ind0))  x <- x[-((window/2)+1),][-which(ind0),]
+    
+    if(nrow(x)<window/2) {
+      out <- cbind(x[(window/2)+1,1], FALSE, FALSE, x[(window/2)+1,1])
+    } else {
+      diffr <- abs(x[(window/2)+1,2]-median(x[-((window/2)+1),2]))*60
+      if(diffr>=outlier.mins & all(dist(x[-((window/2)+1),2])*60<=stationary.mins)) {
+        out <- cbind(x[(window/2)+1,1] + (median(x[c(window/2,(window/2)+2),2]) - x[(window/2)+1,2])*60*60, FALSE, TRUE, x[(window/2)+1,1])
+      }
+      if(diffr>=outlier.mins & !all(dist(x[-((window/2)+1),2])*60<=stationary.mins)) {
+        out <- cbind(x[(window/2)+1,1], TRUE, FALSE, x[(window/2)+1,1])
+      }
+      if(diffr<outlier.mins) out <- cbind(x[(window/2)+1,1], FALSE, FALSE, x[(window/2)+1,1])
+    }
+    return(out)
+  }
+  
+  
+  sunrT <- rollapply(cbind(day,hour)[sunr,], width = window+1, FUN = fnc, fill = FALSE, by.column = F) 
+  sunsT <- rollapply(cbind(day,hour)[suns,], width = window+1, FUN = fnc, fill = FALSE, by.column = F) 
+  
+  sunrT[which(sunrT[,1]==0), c(1,4)] <- day[sunr][which(sunrT[,1]==0)]
+  sunsT[which(sunsT[,1]==0), c(1,4)] <- day[suns][which(sunsT[,1]==0)]
+  
+  out <- data.frame(Twilight = as.POSIXct(c(sunrT[,1], sunsT[,1]), origin = "1970-01-01", tz = "GMT"),
+                    Rise = c(rep(TRUE, nrow(sunsT)), rep(FALSE, nrow(sunsT))),
+                    Deleted = ifelse(c(sunrT[,2], sunsT[,2])==1, TRUE, FALSE),
+                    Edited  = ifelse(c(sunrT[,3], sunsT[,3])==1, TRUE, FALSE),
+                    Twilight0 = as.POSIXct(c(sunrT[,4], sunsT[,4]), origin = "1970-01-01", tz = "GMT"))
+  out <- out[order(out[,1]),]
+  rownames(out) <- 1:nrow(out)
+  
+  if(plot) {
+    day0  <- out$Twilight0
+    hour0 <- hourOffset(as.hour(out$Twilight0),offset)
+    
+    day <- out$Twilight
+    hour <- hourOffset(as.hour(out$Twilight),offset)
+    
+    plot(day0,hour0,type="n",xlab="Date",ylab="Hour")
+    points(day[!out$Deleted],hour[!out$Deleted],pch=16,cex=0.5,col=ifelse(out$Rise[!out$Deleted], "firebrick", "cornflowerblue"))
+    
+    arrows(day0[out$Edited], hour0[out$Edited], day[out$Edited], hour[out$Edited], length = 0.1)
+    points(day0[out$Deleted | out$Edited],hour0[out$Deleted | out$Edited],pch=16,col="grey50")
+    points(day[out$Edited],hour[out$Edited],pch=16,col=ifelse(out$Rise[out$Edited], "firebrick", "cornflowerblue"))    
+    points(day0[out$Deleted],hour0[out$Deleted], pch = "X")
+  }
+  
+  out
 }
 
 
