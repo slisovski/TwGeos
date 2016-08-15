@@ -3,6 +3,7 @@
 export(as.hour)
 export(crepuscularEdit)
 export(driftAdjust)
+export(export2GeoLight)
 export(export2TAGS)
 export(extractCrepuscular)
 export(findChunk24)
