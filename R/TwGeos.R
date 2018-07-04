@@ -277,18 +277,27 @@ export2TAGS <- function(tagdata, path = NULL, file = "exportTAGS", min = 0, max 
 ##' @return Return a data frame that matches GeoLight rquirements.
 ##' @export
 export2GeoLight <- function(twilights) {
-  out <- data.frame(tFirst=as.POSIXct("1900-01-01 01:01","GMT"),tSecond=as.POSIXct("1900-01-01 01:01","GMT"),type=0)
+  
+  
+  diff <- c(apply(cbind(twilights$Twilight[-nrow(twilights)], twilights$Twilight[-1]), 1, function(x) c(x[2]-x[1])/60/60), 0)
+  out  <- data.frame(tFirst = as.POSIXct("1900-01-01 01:01", 
+                                         "GMT"), tSecond = as.POSIXct("1900-01-01 01:01", "GMT"), type = 0, diff.max = 0)
+  
   rw <- 1
-  for (k in 1:(nrow(twilights)-1)) {
-    if(as.numeric(difftime(twilights$Twilight[k],twilights$Twilight[k+1]))< 24 & twilights$Twilight[k] != twilights$Twilight[k+1]) {
-      out[rw,1] <- twilights$Twilight[k]
-      out[rw,2] <- twilights$Twilight[k+1]
-      out[rw,3] <- ifelse(twilights$Rise[k], 1, 2)
-      rw <- rw+1
+  for (k in 1:(nrow(twilights) - 1)) {
+    if (as.numeric(difftime(twilights$Twilight[k], twilights$Twilight[k + 1])) < 24 & twilights$Twilight[k] != twilights$Twilight[k + 1]) {
+      out[rw, 1] <- twilights$Twilight[k]
+      out[rw, 2] <- twilights$Twilight[k + 1]
+      out[rw, 3] <- ifelse(twilights$Rise[k], 1, 2)
+      out[rw, 4] <- max(diff[k:(k+1)])
+      rw <- rw + 1
     }
   }
-  out
+  out <- subset(out, diff.max<23)
+  out[,-ncol(out)]
+  
 }
+
 
 
 ##' Utilities for manipulating hours
