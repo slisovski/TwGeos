@@ -455,6 +455,23 @@ tsimageLines <- function(date,offset,...) {
   lines(date,hour,...)
 }
 
+##' @rdname tsimageDeployment
+##' @importFrom graphics lines
+##' @export
+tsimageDeploymentLine <- function(date, lon, lat, offset, zenith = 96, ...) {
+  
+  tm <- seq(min(date), max(date), by = "day")
+  rise <- rep(c(TRUE, FALSE), length(tm))
+  
+  c.dat <- data.frame(Twilight = twilight(rep(tm, each = 2), lon = lon, lat = lat, 
+                                          rise = rise, zenith = zenith), Rise = rise)
+  
+  tsimageLines(c.dat$Twilight[c.dat$Rise], offset = offset, pch = 16, cex = .25,
+                col = "firebrick")
+  tsimageLines(c.dat$Twilight[!c.dat$Rise], offset = offset, pch = 16, cex = .25,
+               col = "darkblue")
+}
+
 ##' @rdname tsimagePlot
 ##' @importFrom graphics polygon
 ##' @export
