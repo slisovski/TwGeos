@@ -27,4 +27,3 @@ Return a data frame that matches rquirements for TAGS.
 To pre- process geolocator datasets with TAGS it may be necessary 
 to compress the data (i.e. remove repeated light levels).
 }
-

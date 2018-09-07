@@ -15,4 +15,3 @@ Return a data frame that matches GeoLight rquirements.
 \description{
 Transforms twGeos twilight data frames into format reguiered by 'GeoLight'
 }
-

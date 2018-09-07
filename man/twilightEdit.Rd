@@ -38,4 +38,3 @@ This function searches for outliers and either deletes or adjusts them based on 
 'stationary.mins' \tab ... \cr
 }
 }
-
