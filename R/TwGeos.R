@@ -672,8 +672,7 @@ thresholdCalibration <- function(twilight, rise, lon, lat, method = "log-normal"
   mod  <- lm(z~min, data = diffz)
   mod2 <- lm(min~z, data = diffz)
   
-  a1.0 <- median(z)
-  a1.1 <- 90-a1.0
+  z1 <- median(z)
   
   if(plot) {
     opar <- par(mar = c(10, 4, 1, 1))
@@ -690,15 +689,15 @@ thresholdCalibration <- function(twilight, rise, lon, lat, method = "log-normal"
     axis(1, at = seq(0, max(twl_dev), 6), labels = round(90-predict(mod, newdata = data.frame(min = seq(0, max(twl_dev), 6))),1), line = 5)
     mtext("sun elevation angle (degrees)", 1, line = 8)
     
-    if(method=="log-norm") legend("topright", paste(c("0. Sun elevation angle (zero)", "1. Sun elevation angle (median)", "log-mean", "log-sd"), 
-                                                    round(c(z0, predict(mod, newdata = data.frame(min = a1.0)), fitml_ng$estimate[1], fitml_ng$estimate[2]),3)), bty = "n")
-    if(method=="gamma") legend("topright", paste(c("0. Sun elevation angle (zero)", "1. Sun elevation angle (median)", "shape", "scale"), 
-                                                 round(c(z0, predict(mod, newdata = data.frame(min = a1.0)), fitml_ng$estimate[1], fitml_ng$estimate[2]),3)), bty = "n")
+    if(method=="log-norm") legend("topright", paste(c("0. Zenith angle (zero)", "1. Zenith angle (median)", "log-mean", "log-sd"), 
+                                                    round(c(z0, z1, fitml_ng$estimate[1], fitml_ng$estimate[2]),3)), bty = "n")
+    if(method=="gamma") legend("topright", paste(c("0. Zenith angle (zero)", "1. Zenith angle (median)", "shape", "scale"), 
+                                                 round(c(z0, z1, fitml_ng$estimate[1], fitml_ng$estimate[2]),3)), bty = "n")
     
     par(opar)
   }
   
-  c(a1 = predict(mod, newdata = data.frame(min = a1.0)), e0 = z0, log.mean =  fitml_ng$estimate[1], log.sd =  fitml_ng$estimate[2])
+  c(a1 = z1, e0 = z0, log.mean =  fitml_ng$estimate[1], log.sd =  fitml_ng$estimate[2])
 }
 
 
