@@ -683,8 +683,8 @@ thresholdCalibration <- function(twilight, rise, lon, lat, method = "log-normal"
     points(predict(mod2, newdata=data.frame(z = z0)), 0, pch = 21, cex = 5, bg = "white", lwd = 2)
     text(predict(mod2, newdata=data.frame(z = z0)), 0, "0")
     
-    points(a1.0, 0, pch = 21, cex = 5, bg = "white", lwd = 2)
-    text(a1.0, 0, "1")
+    points(z1, 0, pch = 21, cex = 5, bg = "white", lwd = 2)
+    text(z1, 0, "1")
     
     axis(1, at = seq(0, max(twl_dev), 6), labels = round(90-predict(mod, newdata = data.frame(min = seq(0, max(twl_dev), 6))),1), line = 5)
     mtext("sun elevation angle (degrees)", 1, line = 8)
@@ -692,7 +692,7 @@ thresholdCalibration <- function(twilight, rise, lon, lat, method = "log-normal"
     if(method=="log-norm") legend("topright", paste(c("0. Zenith angle (zero)", "1. Zenith angle (median)", "log-mean", "log-sd"), 
                                                     round(c(z0, z1, fitml_ng$estimate[1], fitml_ng$estimate[2]),3)), bty = "n")
     if(method=="gamma") legend("topright", paste(c("0. Zenith angle (zero)", "1. Zenith angle (median)", "shape", "scale"), 
-                                                 round(c(z0, z1, fitml_ng$estimate[1], fitml_ng$estimate[2]),3)), bty = "n")
+                                                    round(c(z0, z1, fitml_ng$estimate[1], fitml_ng$estimate[2]),3)), bty = "n")
     
     par(opar)
   }
