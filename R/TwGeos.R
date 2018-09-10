@@ -672,8 +672,8 @@ thresholdCalibration <- function(twilight, rise, lon, lat, method = "log-normal"
   mod  <- lm(z~min, data = diffz)
   mod2 <- lm(min~z, data = diffz)
   
-  a1.0 <- seq[which.max(lns)]
-  a1.1 <- 90-predict(mod, newdata = data.frame(min = a1.0))
+  a1.0 <- median(z)
+  a1.1 <- 90-a1.0
   
   if(plot) {
     opar <- par(mar = c(10, 4, 1, 1))
