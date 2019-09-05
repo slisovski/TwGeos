@@ -1,19 +1,27 @@
 Package: TwGeos
 Type: Package
 Title: Basic data processing for light-level geolocation archival tags
-Version: 0.0-1
+Version: 0.1.2
 Date: 2016-08-09
-Author: Simon Wotherspoon, Michael Sumner and Simeon Lisovski
-Maintainer: Simeon Lisovski <Simeon.Lisovski@gmail.com>
-Depends:
-    grDevices,
-    graphics,
-    stats,
-    utils
+Authors@R: c(
+    as.person("Simeon Lisovski <Simeon.Lisovski@gmail.com> [aut,cre]"))
+    as.person("Simon Wotherspoon  [aut]"),
+    as.person("Michael Sumner [aut]"),
 Description: Facilities for importing and plotting data recorded by
     light based geolocation archival tags, and in particular detecting
     times of twilight from the recorded light data.
-NeedsCompilation: no
-ByteCompile: yes
+Depends:
+    R(>= 3.3.0)
+Imports:
+    SGAT,
+    grDevices,
+    graphics,
+    stats,
+    utils,
+    raster
+Remotes:
+    SWotherspoon/SGAT
 License: GPL-3
+NeedsCompilation: no
+LazyData: TRUE
 RoxygenNote: 6.0.1
