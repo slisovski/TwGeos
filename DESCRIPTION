@@ -18,6 +18,7 @@ Imports:
     graphics,
     stats,
     utils,
+    zoo,
     raster
 Remotes:
     SWotherspoon/SGAT
