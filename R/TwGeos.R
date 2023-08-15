@@ -463,8 +463,12 @@ tsimageDeploymentLines <- function(date, lon, lat, offset, zenith = 96, ...) {
   tm <- seq(min(date), max(date), by = "day")
   rise <- rep(c(TRUE, FALSE), length(tm))
   
-  c.dat <- data.frame(Twilight = twilight(rep(tm, each = 2), lon = lon, lat = lat, 
-                                          rise = rise, zenith = zenith), Rise = rise)
+  c.dat <- data.frame(
+    Twilight = SGAT::twilight(rep(tm, each = 2), 
+                              lon = lon, lat = lat, 
+                              rise = rise, zenith = zenith), 
+    Rise = rise
+  )
   
   tsimageLines(c.dat$Twilight[c.dat$Rise], offset = offset, ...)
   tsimageLines(c.dat$Twilight[!c.dat$Rise], offset = offset, ...)
