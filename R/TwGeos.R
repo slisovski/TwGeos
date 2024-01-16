@@ -468,7 +468,7 @@ tsimageDeploymentLines <- function(date, lon, lat, offset, zenith = 96, ...) {
   
   tsimageLines(c.dat$Twilight[c.dat$Rise], offset = offset, ...)
   tsimageLines(c.dat$Twilight[!c.dat$Rise], offset = offset, ...)
-}
+} #test for warning: Undocumented code objects; all functions need to have at least on documentation entry
 
 
 ##' @rdname tsimagePlot
