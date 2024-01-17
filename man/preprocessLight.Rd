@@ -4,10 +4,23 @@
 \alias{preprocessLight}
 \title{Interactively derive twilight}
 \usage{
-preprocessLight(tagdata, threshold, offset = 0, lmax = 64, zlim = c(0,
-  lmax), extend = 0, dark.min = 0, twilights = NULL, stage = 1,
-  point.cex = 0.8, width = 12, height = 4, palette = defaultPalette[c(5,
-  2, 9, 3, 4, 1, 13)], gr.Device = "default")
+preprocessLight(
+  tagdata,
+  threshold,
+  offset = 0,
+  lmax = 64,
+  zlim = c(0, lmax),
+  extend = 0,
+  dark.min = 0,
+  twilights = NULL,
+  stage = 1,
+  fixed = NULL,
+  point.cex = 0.8,
+  width = 12,
+  height = 4,
+  palette = defaultPalette[c(5, 2, 9, 3, 4, 1, 13)],
+  gr.Device = "default"
+)
 }
 \arguments{
 \item{tagdata}{a dataframe with columns \code{Date} and
@@ -32,6 +45,10 @@ than this interval will be excluded.}
 
 \item{stage}{when re-editing, the stage to commence at}
 
+\item{fixed}{a two column matrix of locations, marking a point with the digit n replaces the marked
+twilight with the computed twilight time for the n-th fixed
+location.}
+
 \item{point.cex}{expansion factor for plot points.}
 
 \item{width}{width of the interface windows.}
@@ -41,7 +58,7 @@ than this interval will be excluded.}
 \item{palette}{a colour palette of 7 colours.}
 
 \item{gr.Device}{the graphic device used to plot interactive plots. Use 'default' for windows platforms and 'x11' for mac platforms. 
-NOTE: If you are working on a Mac you have to install Quarz first (https://www.xquartz.org).}
+NOTE: If you are working on a Mac you have to install Quartz first (https://www.xquartz.org).}
 }
 \value{
 A dataframe with columns

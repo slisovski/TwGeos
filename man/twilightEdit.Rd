@@ -4,8 +4,15 @@
 \alias{twilightEdit}
 \title{Search and edit twilight outliers}
 \usage{
-twilightEdit(twilights, offset = 17, window = 4, outlier.mins = 45,
-  stationary.mins = 15, zlim = c(0, 64), plot = T)
+twilightEdit(
+  twilights,
+  offset = 17,
+  window = 4,
+  outlier.mins = 45,
+  stationary.mins = 15,
+  zlim = c(0, 64),
+  plot = T
+)
 }
 \arguments{
 \item{twilights}{a dataframe with columns \code{Twilight} and \code{Rise}}
@@ -17,6 +24,10 @@ twilightEdit(twilights, offset = 17, window = 4, outlier.mins = 45,
 \item{outlier.mins}{threshold for outliers (in minutes)}
 
 \item{stationary.mins}{threshold for variation of twiligths at stationary site (in mins)}
+
+\item{zlim}{the range of light levels to plot (test for check)}
+
+\item{plot}{if element should be plotted (test for check)}
 }
 \value{
 the dataframe of edited twilights, with columns

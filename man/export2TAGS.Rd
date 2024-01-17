@@ -4,8 +4,13 @@
 \alias{export2TAGS}
 \title{Export data to match TAGS requirements}
 \usage{
-export2TAGS(tagdata, path = NULL, file = "exportTAGS", min = 0,
-  max = 9999999999)
+export2TAGS(
+  tagdata,
+  path = NULL,
+  file = "exportTAGS",
+  min = 0,
+  max = 9999999999
+)
 }
 \arguments{
 \item{tagdata}{a dataframe with columns \code{Date} and
@@ -16,9 +21,9 @@ and light levels recorded by the tag.}
 
 \item{file}{name of txt file (without suffix)}
 
-\item{min}{...}
+\item{min}{raise low values to designated minimum}
 
-\item{max}{...}
+\item{max}{trim high values to designated maximum}
 }
 \value{
 Return a data frame that matches rquirements for TAGS.

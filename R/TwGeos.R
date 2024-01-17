@@ -6,8 +6,7 @@
 #' recorded light data.
 #'
 #' @name TwGeos-package
-#' @docType package
-#' @author Simon Wotherspoon, Micheal Sumner and Simeon Lisovski.
+#' @author Simeon Lisovski, Micheal Sumner, Simon Wotherspoon and Paul Ritter
 NULL
 
 ## Data import
@@ -248,9 +247,10 @@ readMTsst <- function(file,d.lux=NULL,skip=20) {
 ##' and light levels recorded by the tag.
 ##' @param path if full path is specified, the output will be writen as a txt file ready to import into TAGS
 ##' @param file name of txt file (without suffix)
-##' @param min ...
-##' @param max ...
+##' @param min raise low values to designated minimum
+##' @param max trim high values to designated maximum
 ##' @return Return a data frame that matches rquirements for TAGS.
+##' @importFrom utils write.table
 ##' @export
 export2TAGS <- function(tagdata, path = NULL, file = "exportTAGS", min = 0, max = 9999999999) {
   light <- tagdata$Light
@@ -278,6 +278,7 @@ export2TAGS <- function(tagdata, path = NULL, file = "exportTAGS", min = 0, max 
 ##' @export
 export2GeoLight <- function(twilights) {
   
+  diff.max <- 0
   
   diff <- c(apply(cbind(twilights$Twilight[-nrow(twilights)], twilights$Twilight[-1]), 1, function(x) c(x[2]-x[1])/60/60), 0)
   out  <- data.frame(tFirst = as.POSIXct("1900-01-01 01:01", 
@@ -456,7 +457,14 @@ tsimageLines <- function(date,offset,...) {
 }
 
 ##' @rdname tsimageDeployment
+##' @title tsimageDeployment
 ##' @importFrom graphics lines
+##' @param date times as a vector of POSIXct.
+##' @param lon longitude for deployment line.
+##' @param lat latitude for deployment line.
+##' @param offset the starting hour for the vertical axes.
+##' @param zenith zenith angle for calculation of deployment line.
+##' @param ... additional arguments to pass to image.
 ##' @export
 tsimageDeploymentLines <- function(date, lon, lat, offset, zenith = 96, ...) {
   
@@ -468,7 +476,7 @@ tsimageDeploymentLines <- function(date, lon, lat, offset, zenith = 96, ...) {
   
   tsimageLines(c.dat$Twilight[c.dat$Rise], offset = offset, ...)
   tsimageLines(c.dat$Twilight[!c.dat$Rise], offset = offset, ...)
-} #test for warning: Undocumented code objects; all functions need to have at least on documentation entry
+} 
 
 
 ##' @rdname tsimagePlot
@@ -632,6 +640,10 @@ findTwilights <- function(tagdata,threshold,include,
 ##' @param method ...
 ##' @param plot ...
 ##' @return a vector with the _zero_ and the _median_ zenith angle as well as the parameters of the error distribution.
+##' @importFrom SGAT refracted
+##' @importFrom stats dgamma dist dlnorm lm predict 
+##' @importFrom graphics arrows hist legend mtext par text
+##' @importFrom MASS fitdistr
 ##' @export
 thresholdCalibration <- function(twilight, rise, lon, lat, method = "log-normal", plot= TRUE) {
  
@@ -932,6 +944,8 @@ twilightAdjust <- function(twilights,interval,fixed=FALSE) {
 ##' @param window the number of neighboring twilights
 ##' @param outlier.mins threshold for outliers (in minutes)
 ##' @param stationary.mins threshold for variation of twiligths at stationary site (in mins)
+##' @param zlim the range of light levels to plot (test for check)
+##' @param plot if element should be plotted (test for check)
 ##' @return the dataframe of edited twilights, with columns
 ##' \item{\code{Twilight}}{times of (edited) twilight}
 ##' \item{\code{Rise}}{logical indicating sunrise}

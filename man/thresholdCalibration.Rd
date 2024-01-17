@@ -4,8 +4,14 @@
 \alias{thresholdCalibration}
 \title{Search for twilight times}
 \usage{
-thresholdCalibration(twilight, rise, lon, lat, method = "log-normal",
-  plot = TRUE)
+thresholdCalibration(
+  twilight,
+  rise,
+  lon,
+  lat,
+  method = "log-normal",
+  plot = TRUE
+)
 }
 \arguments{
 \item{twilight}{...}

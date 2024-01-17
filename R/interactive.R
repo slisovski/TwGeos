@@ -2,8 +2,6 @@ defaultPalette <- c(red="#E41A1C", blue="#377EB8", green="#4DAF4A", violet="#984
                     orange="#FF7F00", yellow="#FFFF33", brown="#A65628", pink="#F781BF",
                     black="#000000", grey3="#333333", grey6="#666666", grey9="#999999", greyC="#CCCCCC")
 
-
-
 ##' Mouse button identification
 ##'
 ##' Identify left and right mouse button clicks from the buttons
@@ -255,6 +253,7 @@ selectionRectangle <- function(x1,x2,col,add=FALSE) {
 ##' \item{\code{End}}{date of last observation in the crepuscular segment}
 ##' @importFrom graphics grconvertX grconvertY lines points
 ##' @importFrom grDevices dev.cur dev.new dev.off dev.set getGraphicsEvent setGraphicsEventHandlers
+##' @importFrom callr r
 ##' @export
 crepuscularEdit <- function(tagdata,twilights,offset=0,extend=6,threshold=NULL,lmax=64,zlim=c(0,lmax),
                              point.cex=0.5,width=12,height=4,
@@ -325,7 +324,7 @@ crepuscularEdit <- function(tagdata,twilights,offset=0,extend=6,threshold=NULL,l
 
   ## Draw light profiles
   winBDraw <- function() {
-    setDevice(winB)
+    r(winB)
     ## Overlay with light profiles
     profileOverlay(date,lght,threshold,showobs,showlag,
                     profile.col=palette[3:5],threshold.col=palette[6],
@@ -628,12 +627,15 @@ crepuscularEdit <- function(tagdata,twilights,offset=0,extend=6,threshold=NULL,l
 ##' than this interval will be excluded.
 ##' @param twilights a result of a previous run to re-edit
 ##' @param stage when re-editing, the stage to commence at
+##' @param fixed a two column matrix of locations, marking a point with the digit n replaces the marked
+##' twilight with the computed twilight time for the n-th fixed
+##' location.
 ##' @param point.cex expansion factor for plot points.
 ##' @param width width of the interface windows.
 ##' @param height height of the interface windows.
 ##' @param palette a colour palette of 7 colours.
 ##' @param gr.Device the graphic device used to plot interactive plots. Use 'default' for windows platforms and 'x11' for mac platforms. 
-##' NOTE: If you are working on a Mac you have to install Quarz first (https://www.xquartz.org).
+##' NOTE: If you are working on a Mac you have to install Quartz first (https://www.xquartz.org).
 ##' @return A dataframe with columns
 ##' \item{\code{Twilight}}{times of twilight}
 ##' \item{\code{Rise}}{logical indicating sunrise}
@@ -646,10 +648,14 @@ crepuscularEdit <- function(tagdata,twilights,offset=0,extend=6,threshold=NULL,l
 ##' @importFrom stats median
 ##' @importFrom graphics abline grconvertX grconvertY lines plot.new points title
 ##' @importFrom grDevices dev.cur dev.new dev.off dev.set getGraphicsEvent setGraphicsEventHandlers recordPlot replayPlot
+##' @importFrom utils write.table
+##' @importFrom SGAT twilight
+##' @importFrom grDevices x11
 ##' @export
 preprocessLight <- function(tagdata,threshold,offset=0,lmax=64,zlim=c(0,lmax),
                             extend=0,dark.min=0,
                             twilights=NULL,stage=1,
+                            fixed = NULL,
                             point.cex=0.8,width=12,height=4,
                             palette=defaultPalette[c(5,2,9,3,4,1,13)],
                             gr.Device = 'default') {
@@ -797,26 +803,26 @@ preprocessLight <- function(tagdata,threshold,offset=0,lmax=64,zlim=c(0,lmax),
 
 
   ## Draw path
-  winCDraw <- function() {
-    if(!is.null(path)) {
-      setDevice(winC)
-      ## Create underlying map
-      if(is.null(rmap)) {
-        ## User defined map function
-        plotMap(range(path[,1]),range(path[,2]))
-        rmap <<- recordPlot()
-      } else {
-        ## Replot stored plot
-        replayPlot(rmap)
-      }
-      ## Show full path
-      lines(path[,1],path[,2],col=palette[5])
-      points(path[,1],path[,2],col=palette[5],pch=16,cex=0.4)
-      ## Highlight current point
-      marker <- twilights$Marker[index]
-      points(path[index,1],path[index,2],col=palette[if(marker>0 & marker <= NROW(fixed)) 4 else 6],pch=16,cex=1)
-    }
-  }
+  # winCDraw <- function() {
+  #   if(!is.null(path)) {
+  #     setDevice(device = winC)
+  #     ## Create underlying map
+  #     if(is.null(rmap)) {
+  #       ## User defined map function
+  #       plotMap(range(path[,1]),range(path[,2]))
+  #       rmap <<- recordPlot()
+  #     } else {
+  #       ## Replot stored plot
+  #       replayPlot(rmap)
+  #     }
+  #     ## Show full path
+  #     lines(path[,1],path[,2],col=palette[5])
+  #     points(path[,1],path[,2],col=palette[5],pch=16,cex=0.4)
+  #     ## Highlight current point
+  #     marker <- twilights$Marker[index]
+  #     points(path[index,1],path[index,2],col=palette[if(marker>0 & marker <= NROW(fixed)) 4 else 6],pch=16,cex=1)
+  #   }
+  # }
 
   ## onMouseDown callback for twilights window.
   winAOnMouseDown <- function(buttons,x,y) {
@@ -938,33 +944,33 @@ preprocessLight <- function(tagdata,threshold,offset=0,lmax=64,zlim=c(0,lmax),
   }
 
   ## onMouseDown callback for map window.
-  winCOnMouseDown <- function(buttons,x,y) {
-    if(!is.null(path)) {
-      setDevice(winC)
-      if(length(buttons) > 0) {
-        b <- mouseButton(buttons)
-        ## Button 1 -> select point
-        if(b==1) {
-          ## Select nearest point
-          k <- ndcClosest(x,y,path[,1],path[,2])
-          cache(k)
-        }
-        if(b==2) {
-          lon <- grconvertX(x,from="ndc",to="user")%%360
-          lat <- pmin(90,pmax(-90,grconvertY(y,from="ndc",to="user")))
-          twl <- twilight(twilights$Twilight[index],lon,lat,rise=twilights$Rise[index],zenith=zenith)
-          changed <<- TRUE
-          editpt <<- c(twl,threshold)
-        }
-
-      }
-
-      winADraw()
-      winBDraw()
-      winCDraw()
-    }
-    NULL
-  }
+  # winCOnMouseDown <- function(buttons,x,y) {
+  #   if(!is.null(path)) {
+  #     setDevice(winC)
+  #     if(length(buttons) > 0) {
+  #       b <- mouseButton(buttons)
+  #       ## Button 1 -> select point
+  #       if(b==1) {
+  #         ## Select nearest point
+  #         k <- ndcClosest(x,y,path[,1],path[,2])
+  #         cache(k)
+  #       }
+  #       if(b==2) {
+  #         lon <- grconvertX(x,from="ndc",to="user")%%360
+  #         lat <- pmin(90,pmax(-90,grconvertY(y,from="ndc",to="user")))
+  #         twl <- twilight(twilights$Twilight[index],lon,lat,rise=twilights$Rise[index],zenith=zenith)
+  #         changed <<- TRUE
+  #         editpt <<- c(twl,threshold)
+  #       }
+  # 
+  #     }
+  # 
+  #     winADraw()
+  #     winBDraw()
+  #     winCDraw()
+  #   }
+  #   NULL
+  # }
 
   ## onKeybd callback for both windows
   onKeybd <- function(key) {
