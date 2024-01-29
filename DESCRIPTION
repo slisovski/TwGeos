@@ -15,16 +15,14 @@ Description: Facilities for importing and plotting data recorded by
 Depends:
     R(>= 3.3.0)
 Imports:
-    SGAT,
     grDevices,
     graphics,
     stats,
     utils,
     zoo,
     MASS,
-    callr
-Remotes:
-    SWotherspoon/SGAT
+    callr,
+    GeoLight
 License: GPL-3
 NeedsCompilation: no
 LazyData: TRUE

@@ -649,7 +649,7 @@ crepuscularEdit <- function(tagdata,twilights,offset=0,extend=6,threshold=NULL,l
 ##' @importFrom graphics abline grconvertX grconvertY lines plot.new points title
 ##' @importFrom grDevices dev.cur dev.new dev.off dev.set getGraphicsEvent setGraphicsEventHandlers recordPlot replayPlot
 ##' @importFrom utils write.table
-##' @importFrom SGAT twilight
+##' @importFrom GeoLight twilight
 ##' @importFrom grDevices x11
 ##' @export
 preprocessLight <- function(tagdata,threshold,offset=0,lmax=64,zlim=c(0,lmax),

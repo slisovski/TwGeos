@@ -35,8 +35,6 @@ readLig <- function(file,skip=0) {
   d
 }
 
-
-
 ##' Read the activity data from a BAS tag
 ##'
 ##' Functions for importing activity data from BAS tags.  The
@@ -640,7 +638,7 @@ findTwilights <- function(tagdata,threshold,include,
 ##' @param method ...
 ##' @param plot ...
 ##' @return a vector with the _zero_ and the _median_ zenith angle as well as the parameters of the error distribution.
-##' @importFrom SGAT refracted
+##' @importFrom GeoLight refracted twilight
 ##' @importFrom stats dgamma dist dlnorm lm predict 
 ##' @importFrom graphics arrows hist legend mtext par text
 ##' @importFrom MASS fitdistr
@@ -654,7 +652,7 @@ thresholdCalibration <- function(twilight, rise, lon, lat, method = "log-normal"
   z <- refracted(zenith(sun, lon, lat))
   inc = 0
   repeat {
-    twl_t <- SGAT::twilight(tab[, 1], lon, lat, rise = tab[, 2], zenith = max(z) + inc, iters = 5, closest = TRUE)
+    twl_t <- twilight(tab[, 1], lon, lat, rise = tab[, 2], zenith = max(z) + inc, iters = 5, closest = TRUE)
     
     twl_dev <- ifelse(tab$Rise, as.numeric(difftime(tab[, 1], twl_t, units = "mins")), 
                       as.numeric(difftime(twl_t, tab[, 1], units = "mins")))
@@ -1036,7 +1034,7 @@ twilightEdit <- function(twilights, offset = 17, window = 4, outlier.mins = 45, 
 ##' interval.
 ##' @param col colors for increasing and decreasing zenith angles
 ##' @param ... additional arguments to pass to \code{plot}.
-##' @importFrom SGAT zenith solar
+##' @importFrom GeoLight zenith solar
 ##' @importFrom graphics plot
 ##' @export
 thresholdCalibrate <- function(tagdata,lon,lat,max.adjust=TRUE,
